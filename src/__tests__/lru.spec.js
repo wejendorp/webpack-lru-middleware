@@ -38,6 +38,28 @@ describe('lru middleware', () => {
 		});
 	});
 
+	it('holds multiple entries', done => {
+		configure({});
+		context.middleware[0]({ path: '/test0.js' }, null, err1 => {
+			if (err1) {
+				return done(err1);
+			}
+			expect(context.devMiddleware.invalidate).toHaveBeenCalled();
+			expect(context.config.entry()).toEqual({ test0: './src/empty' });
+			context.middleware[0]({ path: '/test1.js' }, null, err2 => {
+				if (err2) {
+					return done(err2);
+				}
+				expect(context.devMiddleware.invalidate).toHaveBeenCalled();
+				expect(context.config.entry()).toEqual({
+					test0: './src/empty',
+					test1: './src/empty'
+				});
+				done();
+			});
+		});
+	});
+
 	it('pushes out old entries', done => {
 		configure({ lru: { max: 1 } });
 		context.middleware[0]({ path: '/test0.js' }, null, err1 => {
@@ -45,7 +67,7 @@ describe('lru middleware', () => {
 				return done(err1);
 			}
 			expect(context.devMiddleware.invalidate).toHaveBeenCalled();
-			expect(context.config.entry()).toMatchObject({ test0: './src/empty' });
+			expect(context.config.entry()).toEqual({ test0: './src/empty' });
 			context.devMiddleware.invalidate.mockClear();
 
 			context.middleware[0]({ path: '/test1.js' }, null, err2 => {
@@ -53,7 +75,7 @@ describe('lru middleware', () => {
 					return done(err1);
 				}
 				expect(context.devMiddleware.invalidate).toHaveBeenCalled();
-				expect(context.config.entry()).toMatchObject({ test1: './src/empty' });
+				expect(context.config.entry()).toEqual({ test1: './src/empty' });
 				done();
 			});
 		});
