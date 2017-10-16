@@ -25,5 +25,13 @@
 	},
 	"dependencies": {
 		"lru": "^3.1.0"
-	}
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/wejendorp/webpack-lru-middleware.git"
+	},
+	"bugs": {
+		"url": "https://github.com/wejendorp/webpack-lru-middleware/issues"
+	},
+	"homepage": "https://github.com/wejendorp/webpack-lru-middleware#readme"
 }
