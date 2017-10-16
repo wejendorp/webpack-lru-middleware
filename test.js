@@ -8,11 +8,16 @@ const app = express();
 
 const webpackConfig = {
 	entry: () => ({
-		'test': './src/empty'
+		test0: './src/empty',
+		test1: './src/empty',
+		test2: './src/empty'
 	})
 };
 const lru = webpackLRU({
 	// defaultEntry:
+	lru: {
+		max: 1
+	}
 });
 
 const compiler = webpack(lru.configure(webpackConfig));

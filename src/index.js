@@ -1,11 +1,16 @@
 const path = require('path');
+const LRU = require('lru');
 
 module.exports = function(options) {
 	const opts = Object.assign(
 		{
 			defaultEntry: { __empty__: path.resolve(__dirname, './empty.js') },
 			initialEntry: [],
-			mapToEntry: req => path.basename(req.path, '.js')
+			mapToEntry: req => path.basename(req.path, '.js'),
+			lru: {
+				max: undefined,
+				maxAge: undefined
+			}
 		},
 		options || {}
 	);
@@ -13,7 +18,7 @@ module.exports = function(options) {
 	const lru = {
 		options: opts,
 		getEntrypoints: null,
-		active: [],
+		active: new LRU(opts.lru),
 		configure(webpackConfig) {
 			// normalize entry as a function, and cache it:
 			lru.getEntrypoints =
@@ -27,7 +32,7 @@ module.exports = function(options) {
 					}
 
 					const entries = lru.getEntrypoints();
-					return lru.active.reduce(
+					return lru.active.keys.reduce(
 						(agg, entry) =>
 							Object.assign(agg, {
 								[entry]: entries[entry]
@@ -44,10 +49,10 @@ module.exports = function(options) {
 
 					const entries = lru.getEntrypoints();
 					const entrypoint = entries[entryName];
-					const shouldMount = lru.active.indexOf(entryName) === -1;
+					const shouldMount = lru.active.get(entryName) === undefined;
 
 					if (entrypoint && shouldMount) {
-						lru.active.push(entryName);
+						lru.active.set(entryName, true);
 						devMiddleware.invalidate();
 					}
 					next();
@@ -56,5 +61,9 @@ module.exports = function(options) {
 			];
 		}
 	};
+
+	// Initialize before returning:
+	opts.initialEntry.forEach(entry => lru.active.set(entry, true));
+
 	return lru;
 };

@@ -1,19 +1,29 @@
 {
 	"name": "webpack-lru-middleware",
-	"version": "1.0.0",
+	"version": "1.0.0-semantically-released",
 	"description": "",
 	"main": "src/index.js",
 	"scripts": {
 		"start": "nodemon test.js",
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"test": "tradeshift-scripts test",
+		"test:update": "tradeshift-scripts test --updateSnapshot",
+		"lint": "tradeshift-scripts lint",
+		"format": "tradeshift-scripts format",
+		"validate": "tradeshift-scripts validate",
+		"precommit": "tradeshift-scripts precommit",
+		"after-success": "tradeshift-scripts travis-after-success"
 	},
-	"keywords": [],
+	"keywords": ["webpack", "lazy", "lru", "entry"],
 	"author": "Jacob Wejendorp <jacob@wejendorp.dk> (http://dorp.io)",
 	"license": "MIT",
 	"devDependencies": {
 		"express": "^4.16.2",
 		"nodemon": "^1.12.1",
+		"tradeshift-scripts": "^1.2.0",
 		"webpack": "^3.7.1",
 		"webpack-dev-middleware": "^1.12.0"
+	},
+	"dependencies": {
+		"lru": "^3.1.0"
 	}
 }
