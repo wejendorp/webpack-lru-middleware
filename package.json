@@ -1,8 +1,9 @@
 {
 	"name": "webpack-lru-middleware",
 	"version": "0.0.0-semantically-released",
-	"description": "",
+	"description": "Augments webpack-dev-middleware with a lazy LRU cache for entrypoints",
 	"main": "src/index.js",
+	"files": ["src/"],
 	"scripts": {
 		"start": "nodemon test.js",
 		"test": "tradeshift-scripts test",
@@ -13,7 +14,6 @@
 		"precommit": "tradeshift-scripts precommit",
 		"after-success": "tradeshift-scripts travis-after-success"
 	},
-	"keywords": ["webpack", "lazy", "lru", "entry"],
 	"author": "Jacob Wejendorp <jacob@wejendorp.dk> (http://dorp.io)",
 	"license": "MIT",
 	"devDependencies": {
