@@ -28,10 +28,7 @@ describe('lru middleware', () => {
 
 	it('activates entry on request', done => {
 		configure({ mapToEntry: () => 'test0' });
-		context.middleware[0]({}, null, err => {
-			if (err) {
-				return done(err);
-			}
+		context.middleware[0]({}, null, () => {
 			expect(context.devMiddleware.invalidate).toHaveBeenCalled();
 			expect(context.config.entry()).toMatchObject({ test0: './src/empty' });
 			done();
@@ -40,10 +37,7 @@ describe('lru middleware', () => {
 
 	it('activates entry on request (entry as plain object)', done => {
 		configure({ mapToEntry: () => 'test0' }, { entry: { test0: './src/empty' } });
-		context.middleware[0]({}, null, err => {
-			if (err) {
-				return done(err);
-			}
+		context.middleware[0]({}, null, () => {
 			expect(context.devMiddleware.invalidate).toHaveBeenCalled();
 			expect(context.config.entry()).toMatchObject({ test0: './src/empty' });
 			done();
@@ -55,10 +49,7 @@ describe('lru middleware', () => {
 			{ mapToEntry: () => 'test0', initialEntry: ['test0'] },
 			{ entry: { test0: './src/empty' } }
 		);
-		context.middleware[0]({}, null, err => {
-			if (err) {
-				return done(err);
-			}
+		context.middleware[0]({}, null, () => {
 			expect(context.config.entry()).toEqual({ test0: './src/empty' });
 			expect(context.devMiddleware.invalidate).not.toHaveBeenCalled();
 			done();
@@ -67,18 +58,12 @@ describe('lru middleware', () => {
 
 	it('holds multiple entries', done => {
 		configure({});
-		context.middleware[0]({ path: '/test0.js' }, null, err1 => {
-			if (err1) {
-				return done(err1);
-			}
+		context.middleware[0]({ path: '/test0.js' }, null, () => {
 			expect(context.devMiddleware.invalidate).toHaveBeenCalled();
 			expect(context.config.entry()).toEqual({ test0: './src/empty' });
 			context.devMiddleware.invalidate.mockClear();
 
-			context.middleware[0]({ path: '/test1.js' }, null, err2 => {
-				if (err2) {
-					return done(err2);
-				}
+			context.middleware[0]({ path: '/test1.js' }, null, () => {
 				expect(context.devMiddleware.invalidate).toHaveBeenCalled();
 				expect(context.config.entry()).toEqual({
 					test0: './src/empty',
@@ -89,22 +74,21 @@ describe('lru middleware', () => {
 		});
 	});
 
-	it('pushes out old entries', done => {
-		configure({ lru: { max: 1 } });
-		context.middleware[0]({ path: '/test0.js' }, null, err1 => {
-			if (err1) {
-				return done(err1);
-			}
+	it('pushes out old entries and calls hooks', done => {
+		const onAdd = jest.fn();
+		const onRemove = jest.fn();
+		configure({ lru: { max: 1 }, onAdd, onRemove });
+		context.middleware[0]({ path: '/test0.js' }, null, () => {
 			expect(context.devMiddleware.invalidate).toHaveBeenCalled();
 			expect(context.config.entry()).toEqual({ test0: './src/empty' });
 			context.devMiddleware.invalidate.mockClear();
+			expect(onAdd).toHaveBeenCalledWith('test0');
 
-			context.middleware[0]({ path: '/test1.js' }, null, err2 => {
-				if (err1) {
-					return done(err1);
-				}
+			context.middleware[0]({ path: '/test1.js' }, null, () => {
 				expect(context.devMiddleware.invalidate).toHaveBeenCalled();
 				expect(context.config.entry()).toEqual({ test1: './src/empty' });
+				expect(onRemove).toHaveBeenCalledWith('test0');
+				expect(onAdd).toHaveBeenCalledWith('test1');
 				done();
 			});
 		});

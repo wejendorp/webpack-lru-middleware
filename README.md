@@ -52,6 +52,9 @@ const lru = webpackLRU({
   initialEntry: [],
   // configure how requests get mapped to entrypoint names:
   mapToEntry: req => path.basename(req.path, '.js'),
+  // lifecycle hooks for logging / debugging purposes:
+  onAdd: entryName => {},
+  onRemove: entryName => {},
   // LRU Options to configure caching behavior
   // passed straight to https://github.com/chriso/lru
   lru: {

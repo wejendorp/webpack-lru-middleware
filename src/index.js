@@ -1,5 +1,6 @@
 const path = require('path');
 const LRU = require('lru');
+const noop = () => {};
 
 module.exports = function(options) {
 	const opts = Object.assign(
@@ -7,6 +8,8 @@ module.exports = function(options) {
 			defaultEntry: { __empty__: path.resolve(__dirname, './empty.js') },
 			initialEntry: [],
 			mapToEntry: req => path.basename(req.path, '.js'),
+			onAdd: noop,
+			onRemove: noop,
 			lru: {
 				max: undefined,
 				maxAge: undefined
@@ -52,6 +55,7 @@ module.exports = function(options) {
 					const shouldMount = lru.active.get(entryName) === undefined;
 
 					if (entrypoint && shouldMount) {
+						opts.onAdd(entryName);
 						lru.active.set(entryName, true);
 						devMiddleware.invalidate();
 					}
@@ -64,6 +68,7 @@ module.exports = function(options) {
 
 	// Initialize before returning:
 	opts.initialEntry.forEach(entry => lru.active.set(entry, true));
+	lru.active.on('evict', ({ key }) => opts.onRemove(key));
 
 	return lru;
 };
